@@ -1,0 +1,457 @@
+Name: Ashutosh Yadav
+
+Student ID: 18249094 
+
+
+Ingress/Egress filtering ranges: 
+
+192.168.x.x
+
+10.x.x.x
+
+172.16.x.x 
+
+172.31.x.x
+
+127.0.0.1
+
+136.201.x.x (own range)
+
+192.x.x.x (local range)
+
+166.60.x.x (Evil group)
+
+==================================================================================================
+
+Router-PT: BorderRouter Config
+
+==================================================================================================
+
+(10) ip access-list extended border_in_access-list_Fa0/0
+
+(20) deny ip 192.168.0.0 0.0.255.255 any
+
+(30) deny ip 10.0.0.0 0.255.255.255 any
+
+(40) deny ip 172.16.0.0 0.0.255.255 any
+
+(50) deny ip 172.31.0.0 0.0.255.255 any
+
+(60) deny ip host 127.0.0.1 any
+
+(70) deny ip 136.201.0.0 0.0.255.255 any
+
+(80) deny ip 192.0.0.0 0.0.0.255 any
+
+(90) deny ip 192.0.2.0 0.0.0.255 any
+
+(100) deny ip 166.60.0.0 0.0.255.255 136.201.0.0 0.0.255.255
+
+(110) permit tcp any gt 1023 host 136.201.1.10 eq 53
+
+(120) permit tcp any gt 1023 host 136.201.40.0 0.0.0.255 eq 443 reflect https_p_1
+
+(130) permit tcp 20.0.0.0 0.255.255.255 gt 1023 host 136.201.20.100 eq 1433 
+
+(140) evaluate https_return_out_00
+
+(150) permit tcp any eq bgp any eq bgp
+
+(160) deny ip any any
+
+==================================================================================================
+
+(170) ip access-list extended border_out_access-list_Fa0/0
+
+(180) permit tcp host 136.201.1.10 gt 1023 any eq 53
+
+(190) evaluate https_p_1
+
+(200) permit tcp host 136.201.20.100 eq 1433 20.0.0.0 0.255.255.255 gt 1023
+
+(210) permit tcp 136.201.40.0 0.0.0.255 gt 1023 any eq 443 reflect https_return_out_00
+
+(220) permit tcp any eq bgp any eq bgp
+
+(230) deny ip any any
+
+==================================================================================================
+
+(240) ip access-list extended border_in_access-list_Fa1/0
+
+(250) permit tcp host 136.201.1.10 gt 1023 any eq 53
+
+(260) permit tcp host 136.201.1.20 gt 1023 host 136.201.20.100 eq 1433 reflect DB_server_00 
+
+(270) evaluate https_p_0
+
+(280) evaluate https_return_out_10
+
+(290) evaluate rdp_01
+
+(300) evaluate ssh_01
+
+(310) evaluate dns_return_01
+
+(320) deny ip any any
+
+==================================================================================================
+
+(330) ip access-list extended border_out_access-list_Fa1/0
+
+(340) permit tcp any gt 1023 host 136.201.1.10 eq 53
+
+(350) permit tcp any gt 1023 host 136.201.40.0 0.0.0.255 eq 443 reflect https_p_0
+
+(360) permit tcp host 136.201.20.50 gt 1023 host 136.201.1.10 eq 53
+
+(370) permit tcp 136.201.40.0 0.0.0.255 gt 1023 any eq 443 reflect https_return_out_10
+
+(380) permit tcp 136.201.40.0 0.0.0.255 gt 1023 host 136.201.20.50 eq 53 reflect dns_return_01
+
+(390) permit tcp 136.201.50.0 0.0.0.63 gt 1023 136.201.0.0 0.0.255.255 eq 22 reflect ssh_01
+
+(400) permit tcp 136.201.50.0 0.0.0.63 gt 1023 136.201.0.0 0.0.255.255 eq 3389 reflect rdp_01 
+
+(410) evaluate DB_server_00
+
+(420) deny ip any any
+
+==================================================================================================
+
+(430) ip access-list extended border_in_access-list_Fa2/0
+
+(440) permit tcp any gt 1023 host 136.201.1.10 eq 53
+
+(450) permit tcp any gt 1023 host 136.201.40.0 0.0.0.255 eq 443 reflect https_p_1
+
+(460) permit tcp host 136.201.20.100 eq 1433 20.0.0.0 0.255.255.255 gt 1023
+
+(470) permit tcp host 136.201.20.50 gt 1023 host 136.201.1.10 eq 53
+
+(480) permit tcp 136.201.40.0 0.0.0.255 gt 1023 host 136.201.1.10 eq 53 reflect dns_return_00
+
+(490) permit tcp 136.201.40.0 0.0.0.255 gt 1023 any eq 443 reflect https_return_out_20
+
+(500) permit tcp 136.201.50.0 0.0.0.63 gt 1023 136.201.0.0 0.0.255.255 eq 22 reflect ssh_02
+
+(510) permit tcp 136.201.50.0 0.0.0.63 gt 1023 136.201.0.0 0.0.255.255 eq 3389 reflect rdp_02
+
+(520) evaluate DB_server_01
+
+(530) permit tcp any eq bgp any eq bgp
+
+(540) deny ip any any
+
+==================================================================================================
+
+(550) ip access-list extended border_out_access-list_Fa2/0
+
+(560) permit tcp host 136.201.1.10 gt 1023 host 136.201.20.50 eq 53
+
+(570) permit tcp host 136.201.1.20 gt 1023 host 136.201.20.100 eq 1433 reflect DB_server_01
+
+(580) permit tcp 20.0.0.0 0.255.255.255 gt 1023 host 136.201.20.100 eq 1433 
+
+(590) evaluate https_return_out_20
+
+(600) evaluate dns_return_00
+
+(610) evaluate https_p_1
+
+(620) evaluate rdp_02
+
+(630) evaluate ssh_02
+
+(640) permit tcp any eq bgp any eq bgp
+
+(650) deny ip any any
+
+
+==================================================================================================
+
+Router-PT Border:Router commands: 
+
+(660) BorderRouter>
+
+(670) BorderRouter>enable 
+
+(680) BorderRouter#show access-lists 
+
+(690) BorderRouter#config t
+
+(700) BorderRouter(config)#interface FastEthernet 0/0
+
+(710) BorderRouter(config-if)#ip access-group border_in_access-list_Fa0/0
+
+(720) BorderRouter(config-if)#ip access-group border_out_access-list_Fa0/0
+
+(730) BorderRouter(config-if)#exit
+
+(740) BorderRouter(config)#interface FastEthernet 1/0
+
+(750) BorderRouter(config-if)#ip access-group border_in_access-list_Fa1/0
+
+(760) BorderRouter(config-if)#ip access-group border_out_access-list_Fa1/0
+
+(770) BorderRouter(config-if)#exit
+
+(780) BorderRouter(config)#interface FastEthernet 2/0
+
+(790) BorderRouter(config-if)#ip access-group border_in_access-list_Fa2/0
+
+(800) BorderRouter(config-if)#ip access-group border_out_access-list_Fa2/0
+
+(810) BorderRouter(config-if)#exit
+
+
+END OF Router-PT: BorderRouter Config
+
+
+
+==================================================================================================
+==================================================================================================
+
+Router-PT: InternalRouter Config
+
+==================================================================================================
+
+(820) ip access-list extended internal_in_access-list_Fa0/0
+
+(830) permit tcp host 136.201.1.10 gt 1023 host 136.201.20.50 eq 53
+
+(840) evaluate https_p_2
+
+(850) permit tcp 20.0.0.0 0.255.255.255 gt 1023 host 136.201.20.100 eq 1433
+
+(860) permit tcp host 136.201.1.20 gt 1023 host 136.201.20.100 eq 1433 reflect DB_server_02
+
+(870) permit tcp 136.201.40.0 0.0.0.255 gt 1023 host 136.201.20.100 eq 1433 reflect ws_db_0
+
+(880) permit tcp 136.201.40.0 0.0.0.255 gt 1023 host 136.201.20.50 eq 53 reflect ws_dns_0
+
+(890) permit tcp 136.201.40.0 0.0.0.255 gt 1023 any eq 443 reflect https_in_return_0
+
+(900) evaluate rdp_02
+
+(910) evaluate ssh_02
+
+(920) permit tcp any eq bgp any eq bgp
+
+(930) deny ip any any
+
+==================================================================================================
+
+(940) ip access-list extended internal_out_access-list_Fa0/0
+
+(950) permit tcp 136.201.20.50 gt 1023 host 136.201.1.10 eq 53
+
+(960) permit tcp any gt 1023 host 136.201.40.0 0.0.0.255 eq 443 reflect https_p_2
+
+(970) evaluate DB_server_02
+
+(980) evaluate ws_db_0
+
+(990) evaluate ws_dns_0
+
+(1000) evaluate https_in_return_0
+
+(1010) permit tcp host 136.201.20.100 eq 1433 20.0.0.0 0.255.255.255 gt 1023
+
+(1020) permit tcp host 136.201.20.50 gt 1023 host 136.201.1.10 eq 53
+
+(1030) permit tcp 136.201.50.0 0.0.0.63 gt 1023 136.201.0.0 0.0.255.255 eq 3389 reflect ssh_03
+
+(1040) permit tcp 136.201.50.0 0.0.0.63 gt 1023 136.201.0.0 0.0.255.255 eq 22 reflect rdp_03
+
+(1050) permit tcp any eq bgp any eq bgp
+
+(1060) deny ip any any
+
+==================================================================================================
+
+(1070) ip access-list extended internal_in_access-list_Fa1/0
+
+(1080) permit tcp 136.201.20.50 gt 1023 host 136.201.1.10 eq 53
+
+(1090) permit tcp any gt 1023 host 136.201.40.0 0.0.0.255 eq 443 reflect https_p_3
+
+(1100) evaluate DB_server_03
+
+(1110) evaluate ws_db_1
+
+(1120) evaluate ws_dns_1
+
+(1130) evaluate https_in_return_1
+
+(1140) permit tcp host 136.201.20.100 eq 1433 20.0.0.0 0.255.255.255 gt 1023
+
+(1150) permit tcp host 136.201.20.50 gt 1023 host 136.201.1.10 eq 53
+
+(1160) evaluate rdp_03
+
+(1170) evaluate ssh_03
+
+(1180) deny ip any any 
+
+==================================================================================================
+
+(1190) ip access-list extended internal_out_access-list_Fa1/0
+
+(1200) permit tcp host 136.201.1.10 gt 1023 host 136.201.20.50 eq 53
+
+(1210) evaluate https_p_3
+
+(1220) permit tcp host 136.201.1.20 gt 1023 host 136.201.20.100 eq 1433 reflect DB_server_03
+
+(1230) permit tcp 136.201.40.0 0.0.0.255 gt 1023 host 136.201.20.100 eq 1433 reflect ws_db_1
+
+(1240) permit tcp 136.201.40.0 0.0.0.255 gt 1023 host 136.201.20.50 eq 53 reflect ws_dns_1
+
+(1250) permit tcp 136.201.40.0 0.0.0.255 gt 1023 any eq 443 reflect https_in_return_1
+
+(1260) permit tcp 20.0.0.0 0.255.255.255 gt 1023 host 136.201.20.100 eq 1433
+
+(1270) permit tcp 136.201.50.0 0.0.0.63 gt 1023 136.201.0.0 0.0.255.255 eq 3389 reflect rdp_03
+
+(1280) permit tcp 136.201.50.0 0.0.0.63 gt 1023 136.201.0.0 0.0.255.255 eq 22 reflect ssh_03
+
+(1290) deny ip any any
+
+
+==================================================================================================
+
+(1300) ip access-list extended internal_in_access-list_Fa2/0
+
+(1310) permit tcp 136.201.50.0 0.0.0.63 gt 1023 136.201.0.0 0.0.255.255 eq 3389 reflect rdp_04
+
+(1320) permit tcp 136.201.50.0 0.0.0.63 gt 1023 136.201.0.0 0.0.255.255 eq 22 reflect ssh_04
+
+(1330) deny ip any any 
+
+==================================================================================================
+
+(1340) ip access-list extended internal_out_access-list_Fa2/0
+
+(1350) evaluate ssh_04
+
+(1360) evaluate rdp_04
+
+(1370) deny ip any any 
+
+==================================================================================================
+
+
+Router-PT: InternalRouter commands: 
+
+(1380) InternalRouter
+
+(1390) InternalRouter>enable 
+
+(1400) InternalRouter#show access-lists 
+
+(1410) InternalRouter#config t
+
+(1420) InternalRouter(config)#interface FastEthernet 0/0
+
+(1430) InternalRouter(config-if)#ip access-group internal_in_access-list_Fa0/0
+
+(1440) InternalRouter(config-if)#ip access-group internal_out_access-list_Fa0/0
+
+(1450) InternalRouter(config-if)#exit
+
+(1460) InternalRouter(config)#interface FastEthernet 1/0
+
+(1470) InternalRouter(config-if)#ip access-group internal_in_access-list_Fa1/0
+
+(1480) InternalRouter(config-if)#ip access-group internal_out_access-list_Fa1/0
+
+(1490) InternalRouter(config-if)#exit
+
+(1500) InternalRouter(config)#interface FastEthernet 2/0
+
+(1510) InternalRouter(config-if)#ip access-group internal_in_access-list_Fa2/0
+
+(1520) InternalRouter(config-if)#ip access-group internal_out_access-list_Fa2/0
+
+(1530) InternalRouter(config-if)#exit
+
+
+END OF Router-PT: InternalRouter Config
+
+==================================================================================================
+==================================================================================================
+
+Firewall Evaluation Questions
+
+==================================================================================================
+
+Q1) Machine 166.60.6.6:T4077 sends a HTTPS request to public web server 136.201.11.20:T443.
+Q1a) Packet will be dropped by (100), as policy blocks all requests from the EvilGroup network (166.66.0.0)
+
+Q2) Machine 166.60.6.6 uses spoofed source IP address 136.201.40.10:T12345 to send a HTTPS request to Public Web Server 136.201.1.20:T443.
+Q2a) Packet will be dropped by (70), as the ingress filtering will block any packets that appear to be originating from the internal network
+
+Q3) Machine 166.60.6.6 uses spoofed source IP address 172.16.1.1:T53 to send a DNS request to Public DNS Server 136.201.1.10:T53.
+Q3a) Packet will be dropped by (40), as the intress filtering will block any packets coming from 
+source addresses that appear suspicious by definition (172.16.x.x).
+
+Q4) Machine 4.14.54.33:T2233 sends a HTTP request to Web Server 136.201.1.20:T80.
+Q4a) Packet will be dropped by (160), as the rule on (120) specifies that port 443 is to be used for the web server
+
+Q5) Machine 123.5.4.3:T4321 sends a HTTPS request to Web Server 136.201.1.20:T443.
+Q5a) Packet allowed on (120). Return packet is allowed on (190).
+
+Q6) Machine 20.200.200.1:T6789 establishes a TCP connection to MS Database Server 136.201.20.100:T1433.
+Q6a) Packet will be dropped by (160) as (120) requires port >=1024 
+
+Q7) Machine 20.200.200.1:T1023 establishes connection MS Database Server 136.201.20.100:T1433.
+Q7a) Packet will be dropped by (160) as (130) requires port >=1024 
+
+Q8) Router 4.4.4.4 uses your chosen routing protocol with suitable ports (if applicable) to send routing information to border router 10.10.10.10.
+Q8a) Packet allowed on (150). Return packet is allowed on (220)
+
+Q9) Web Server 136.201.1.20:T443 establishes a TCP connection to machine 211.4.3.2:T6789.
+Q9a) Packet will be dropped by (320) as Web server can only initiate connections to the DB server as per (260).
+All other traffic originating in the web server must be return traffic to HTTPS requests.
+
+Q10) Web Server 136.201.1.20:T6789 establishes a TCP connection MS Database Server 136.201.20.100:T1433.
+Q10a) Packet allowed on (260) (570) (860) (1220) and Return packet(s) allowed on (410) (520) (970) (1100).
+
+Q11) Public DNS Server 136.201.1.10:T5555 sends DNS request to outside DNS server 155.43.22.121:T53.
+Q11a) Packet allowed on (180) (250).
+
+Q12) Public DNS Server 136.201.1.10:T1425 establishes TCP connection to MS Database Server 136.201.20.100:T1433.
+Q12a) Packet will be dropped by (320) as (250). Public DNS Server can receive and respond to requests on T53
+
+Q13) Outside DNS Server 188.33.3.3:T10342 sends a DNS request to public DNS Server 136.201.1.10:T53.
+Q13a) Packet allowed on (110) and (340) Return packet(s) allowed on (180) (250)
+
+Q14) Internal DNS Server 136.201.20.50:T20432 sends a DNS request to Public DNS Server 136.201.1.10:T53.
+Q14a) Packet allowed on (360) (470) (1020) (1150). 
+Return packet(s) allowed on (180) (250) (830) (1200).
+
+Q15) MS Database Server 136.201.20.100:T2233 sends a HTTPS request to Web Server 136.201.1.20:T443.
+Q15a) Packet allowed on (350) (450) (960) (1090).
+Return packet(s) allowed on (270) (610) (840) (1210).
+
+Q16) PC 136.201.40.10:T1234 sends a HTTPS request to Web server 5.1.2.3:T443.
+Q16a) Packet allowed on (490) (210)  and Return packet(s) allowed on (590) (140).
+
+Q17) PC 136.201.40.201:T5555 establishes a connection to DataBase Server 136.201.20.100:T1433.
+Q17a) Packet allowed on (870) (1230) and Return packet(s) allowed on (1110) (980).
+
+Q18) Machine 166.60.6.6 uses spoofed source IP address 20.1.1.1:T443 to send a HTTPS response to Internal PC 136.201.40.40:T9876 (without previous request).
+Q18a) Packet will be dropped by (160).
+
+Q19) Admin PC 136.201.50.10:T4408 establishes SSH session with Public Web Server 136.201.1.20:T22.
+Q19a) Packet allowed on (390) (500) (1030) (1280) (1320).
+Return packet(s) allowed on (300) (630) (910) (1170) (1350).
+
+Q20) Admin PC 136.201.50.60:8405 establishes Remote Desktop Session with PC 136.201.40.121:T3389.
+Q20a) Packet allowed on (1310) (1040) Return packet(s) allowed on (1360) (900).
+
+
+
+
+
